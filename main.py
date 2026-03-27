@@ -13,8 +13,12 @@ client = discord.Client(intents=discord.Intents.default())
 async def get_reminders():
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, lambda: subprocess.run(
-        ["osascript", "-e",
-         'tell application "Reminders" to get name of (reminders of list "미리 알림" whose completed is false)'],
+        ["osascript",
+        "-e",
+        'tell application "Reminders" to get name of every reminder whose completed is false and due date <= (current date + 1 * days)'],
+        # "-e", "set time of today to 0",
+        # "-e", "set tomorrow to today + 1 * days",
+        # "-e", "tell application \"Reminders\" to get name of every reminder whose (due date ≥ today and due date < tomorrow and completed is false)"],
         capture_output=True, text=True
     ))
     if result.returncode != 0:
@@ -28,7 +32,7 @@ async def on_ready():
     reminders = await get_reminders()
     message = "오늘 할 일 목록:\n" + "\n".join(f"- {r}" for r in reminders)
     await user.send(message)
-    await user.send("오늘하루도 화이팅!")
+    await user.send("오늘 하루도 화이팅!")
     await client.close()
 
 client.run(TOKEN)
